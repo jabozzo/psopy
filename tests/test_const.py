@@ -1,9 +1,11 @@
+import unittest
+
 import numpy as np
 from psopy import minimize
 from psopy import init_feasible
 
 
-class TestConstrained:
+class TestConstrained(unittest.TestCase):
 
     """Test for verifying constrained optimization."""
 
