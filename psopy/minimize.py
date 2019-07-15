@@ -43,8 +43,8 @@ STATUS_MESSAGES = namedtuple(
 
 def _minimize_pso(
         fun, x0, confunc=None, friction=.8, max_velocity=5., g_rate=.8,
-        l_rate=.5, max_iter=1000, stable_iter=100, ptol=1e-6, ctol=1e-6,
-        callback=None, verbose=False, savefile=None):
+        l_rate=.5, max_iter=1000, max_parallel=0, stable_iter=100,
+        ptol=1e-6, ctol=1e-6, callback=None, verbose=False, savefile=None):
     """Internal implementation for ``psopy.minimize``.
 
     See Also
@@ -69,6 +69,13 @@ def _minimize_pso(
     confunc : callable
         The function that describes constraints. Must be of the form
         ``confunc(pos)`` that returns the constraint matrix.
+    max_parallel : int, optional
+        Maximum number of particles that can be used to evaluate the objective
+        function at a time. If ``max_parallel < N`` then ``x0`` and all
+        sub-sequents positions will be partitioned in ``k`` arrays of shape
+        ``(max_parallel, D)`` and an array of shape ``(n, D)``, where
+        ``N = n + k * max_parallel``. Set ``max_parallel`` to 0 to deactivate
+        (default).
 
     Notes
     -----
@@ -129,6 +136,21 @@ def _minimize_pso(
         message = setup_print(x0.shape[1], max_iter, confunc is not None)
     if savefile:
         iterinfo = []
+
+    n_particles = x0.shape[0]
+    if max_parallel > 0:
+        mp = max_parallel
+        k = n_particles // mp
+
+        old_fun = fun
+
+        def fun(x):
+            results = []
+            for kk in range(k):
+                results.append(old_fun(x[mp*kk:mp*(kk+1), ...]))
+
+            results.append(old_fun(x[mp*k:, ...]))
+            return np.concatenate(tuple(results), axis=0)
 
     position = np.copy(x0)
     velocity = np.random.uniform(-max_velocity, max_velocity, position.shape)
