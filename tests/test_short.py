@@ -1,12 +1,10 @@
-import unittest
-
 import numpy as np
 from psopy import init_feasible
 from psopy import minimize
 from scipy.optimize import rosen
 
 
-class TestQuick(unittest.TestCase):
+class TestQuick:
 
     """Quick simple tests for early validation."""
 

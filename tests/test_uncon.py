@@ -1,10 +1,8 @@
-import unittest
-
 import numpy as np
 from psopy import minimize
 
 
-class TestUnconstrained(unittest.TestCase):
+class TestUnconstrained:
 
     """Test for verifying unconstrained optimization."""
 
